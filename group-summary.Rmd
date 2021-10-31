@@ -15,19 +15,13 @@ library(tidyverse)
 
 ## Introduction
 
-How does intertidal height affect biodiversity?
+**Hypothesis**: Differences in shore elevation affect the total biodiversity present due to differences in emersion time and wave splash.
 
-variables needed: height at each transect
-
-**Hypothesis**: differences in shore elevation and wave exposure affect the total biodiversity present due to differences in emersion time and wave splash.
+Data was collected from Scott's Bay on Tuesday, October 26, 2021 using horizontal transects at two sites.  In our analysis, we used tidal heights (cm) and the number of individuals of each species in each quadrat. In order to investigate our hypothesis, Shannon diversity (H) indices were calculated at each tidal height and an anova was done in order to determine if there was a significant mean difference between biodiversity and tidal heights. Biodiversity (H) was then plotted against tidal height, and a linear regression was done in order to visualize the relationship between the two. 
 
 ## Data Analysis
 
-"Your analyses and displayed results must relate to the hypotheses you made about the effect of habitat structure on intertidal community structure at the outset of the project. The challenge here is to decide on how best to present your results- as is the case with all primary research. Begin by exploring the data, making some preliminary graphs, having discussions with your teammates, and discussing challenges with your instructors. You will need to decide on the best approach for displaying the main results. Your group should create 2-3 clear graphs that visually display your results, and one summary table of the results of accompanying statistical analysis."
-
-### Exploring our data
-
-#### Importing the data
+### Importing the data
 ```{r}
 biodiversity <- read_csv(here("./Data/biodiversity.csv"))
 
@@ -36,7 +30,7 @@ percent_cover <- read_csv(here("./Data/percent-cover.csv"))
 quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
 ```
 
-#### Modifying the data
+### Modifying the data
 
 Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
 
@@ -90,7 +84,22 @@ ShannonIndex <- ShannonIndex %>%
 
 ```
 
-#### Visualising the data
+### Analyzing the data
+
+```{r}
+biodiv_lm <- lm(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
+summary(biodiv_lm)
+```
+p=0.7145, R-squared = -0.04752
+
+```{r}
+ANOVA
+biodiv_aov <- aov(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
+summary(biodiv_aov)
+```
+p = 0.714
+
+### Visualising the data
 ```{r}
 # Create a plot
 DiversityHeight_Plot <- ggplot(data = ShannonIndex,
@@ -107,10 +116,6 @@ DiversityHeight_Plot <- ggplot(data = ShannonIndex,
 
 DiversityHight_Plot
 ```
-
-
-
-
 
 
 Code we're probs not gonna use:
