@@ -79,33 +79,6 @@ ShannonIndex <- ShannonIndex %>%
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r}
 # Cleaning the percent cover CSV file
 percent_cover <- percent_cover %>%
