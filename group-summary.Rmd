@@ -1,0 +1,144 @@
+---
+title: "group-summary"
+author: "Meredith Miller, Carter Burtlake, Naomi Lubkin, Declan Taylor"
+date: "01/11/2021"
+output: pdf_document
+---
+
+```{r, echo=FALSE, message=FALSE}
+library(here)
+library(popbio)
+library(vegan)
+library(labdsv)
+library(tidyverse)
+```
+
+
+## Introduction
+
+How does intertidal height affect biodiversity?
+
+variables needed: height at each transect
+
+**Hypothesis**: differences in shore elevation and wave exposure affect the total biodiversity present due to differences in emersion time and wave splash.
+
+## Data Analysis
+
+"Your analyses and displayed results must relate to the hypotheses you made about the effect of habitat structure on intertidal community structure at the outset of the project. The challenge here is to decide on how best to present your results- as is the case with all primary research. Begin by exploring the data, making some preliminary graphs, having discussions with your teammates, and discussing challenges with your instructors. You will need to decide on the best approach for displaying the main results. Your group should create 2-3 clear graphs that visually display your results, and one summary table of the results of accompanying statistical analysis."
+
+### Exploring our data
+
+#### Importing the data
+```{r}
+biodiversity <- read_csv(here("./Data/biodiversity.csv"))
+
+percent_cover <- read_csv(here("./Data/percent-cover.csv")) 
+
+quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
+```
+
+#### Modifying the data
+
+Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
+
+```{r, echo = FALSE}
+tidal_height <- quadrat_data %>%
+  group_by(vertical_transect, quadrat) %>%
+  summarize("quadrat_height_cm" = quadrat_height)
+
+matrify_biodiv <- biodiversity %>%
+  drop_na(n) %>%
+  group_by(vertical_transect, quadrat) %>%
+  mutate(unique_ID = as.numeric(
+                        paste0(vertical_transect, ".", quadrat))) %>%
+  select(unique_ID,
+         species,
+         n)
+
+matrify_biodiv <- data.frame(
+  matrify_biodiv[,3:5])
+
+vegan_biodiv <- matrify(matrify_biodiv)
+
+ShannonIndex <- data.frame(
+  diversity(vegan_biodiv, index = "shannon"))
+
+ShannonIndex <- ShannonIndex %>%
+  cbind(UniqueID = rownames(ShannonIndex)) %>%
+  separate(UniqueID,
+           c("vertical_transect", "quadrat")) %>%
+  cbind("quadrat_height_cm" = tidal_height$quadrat_height_cm) %>%
+  cbind("exposure" = quadrat_data$side) %>%
+  rename("ShannonIndex" = diversity.vegan_biodiv..index....shannon..)
+
+```
+
+#### Visualising the data
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# Cleaning the percent cover CSV file
+percent_cover <- percent_cover %>%
+  mutate(per_sand = per_sand/100,
+         per_pebble = per_pebble/100,
+         per_cobble = per_cobble/100,
+         per_boulder = per_boulder/100,
+         per_bedrock = per_bedrock/100,
+         per_mussel = per_mussel/100,
+         per_barnacle = per_barnacle/100,
+         per_upright = per_upright/100,
+         per_crust = per_crust/100)
+
+# Adding a column o calculate species richness
+tidal_height <- quadrat_data %>%
+  group_by(vertical_transect, quadrat) %>%
+  summarize("quadrat_height_cm" = quadrat_height)
+
+quad_richness <- biodiversity %>%
+  drop_na(n) %>%
+  group_by(vertical_transect, quadrat) %>%
+  summarize(n_spp = length(unique(species))) %>%
+  # Match the quadrat to a tidalhight value
+  cbind("quadrat_height_cm" = tidal_height$quadrat_height_cm) %>%
+  cbind("exposure" = quadrat_data$side)
+
+spp_evenness <- biodiversity %>%
+  drop_na(n) %>%
+  group_by(vertical_transect, quadrat) %>%
+  summarize(n_indv = length(unique(species))) %>%
+  cbind("quadrat_height_cm" = tidal_height$quadrat_height_cm) %>%
+  cbind("exposure" = quadrat_data$side)
+```
+
+
+#### Visualizing the data
