@@ -93,8 +93,7 @@ ShannonIndex <- ShannonIndex %>%
 #### Visualising the data
 ```{r}
 # Create a plot
-DiversityHeight_Plot <-
-  ggplot(data = ShannonIndex,
+DiversityHeight_Plot <- ggplot(data = ShannonIndex,
          aes(x = quadrat_height_cm,
              y = ShannonIndex)) +
   geom_point(aes(colour = exposure)) +
