@@ -13,7 +13,6 @@ library(labdsv)
 library(tidyverse)
 ```
 
-
 ## Introduction
 
 How does intertidal height affect biodiversity?
@@ -79,33 +78,6 @@ ShannonIndex <- ShannonIndex %>%
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ```{r}
 # Cleaning the percent cover CSV file
 percent_cover <- percent_cover %>%
@@ -140,5 +112,3 @@ spp_evenness <- biodiversity %>%
   cbind("exposure" = quadrat_data$side)
 ```
 
-
-#### Visualizing the data
