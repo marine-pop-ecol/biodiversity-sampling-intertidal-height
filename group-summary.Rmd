@@ -42,40 +42,73 @@ quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
 Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
 
 ```{r, echo = FALSE}
+# Create a data.frame with the tidal height values for each quadrant
 tidal_height <- quadrat_data %>%
   group_by(vertical_transect, quadrat) %>%
   summarize("quadrat_height_cm" = quadrat_height)
 
+# Biodiversity is calculated using the diversity() function from the vegan
+# package. The `biodiversity` dataframe needs to be reformatted to wide data
+# to allow the "vegan" package to work.
+
+# Setting up the `biodiversity` data.frame to the "3-column" format required by
+# the matrify() function from the "labdsv" package.
 matrify_biodiv <- biodiversity %>%
   drop_na(n) %>%
   group_by(vertical_transect, quadrat) %>%
+  
+  # Generating a unique ID that contains both the `vertial_transect` and 
+  # `quadrat` information to be read by the matrify() function, which requires 
+  # site to be contained within 1 column.
   mutate(unique_ID = as.numeric(
                         paste0(vertical_transect, ".", quadrat))) %>%
-  select(unique_ID,
-         species,
-         n)
+  select(unique_ID, species, n)
 
+# Dropping the group by columns with irrelevant information
 matrify_biodiv <- data.frame(
   matrify_biodiv[,3:5])
 
+# Running the matrify function to create a data.frame that can be read by the
+# "vegan" diversity() function.
 vegan_biodiv <- matrify(matrify_biodiv)
 
+# Save the Shannon Index data as a data.frame
 ShannonIndex <- data.frame(
   diversity(vegan_biodiv, index = "shannon"))
 
+# Modifications to the Shannon Index data
 ShannonIndex <- ShannonIndex %>%
+  # Turning the row names back into a column
   cbind(UniqueID = rownames(ShannonIndex)) %>%
+  # Separating UniqueID back into distinct transect and quadrat numbers.
   separate(UniqueID,
            c("vertical_transect", "quadrat")) %>%
+  # Adding quadrant height and wave exposure to the dataframe
   cbind("quadrat_height_cm" = tidal_height$quadrat_height_cm) %>%
   cbind("exposure" = quadrat_data$side) %>%
+  #Fixing the column names.
   rename("ShannonIndex" = diversity.vegan_biodiv..index....shannon..)
 
 ```
 
 #### Visualising the data
 ```{r}
+# Create a plot
+DiversityHeight_Plot <-
+  
+  ggplot(data = ShannonIndex,
+         aes(x = quadrat_height_cm,
+             y = ShannonIndex)) +
+  geom_point(aes(colour = exposure)) +
+  geom_smooth(colour = "black",
+              size = 0.7,
+              method = lm, se = FALSE) +
+  labs(x = "Quadrat Height (cm)",
+       y = "Shannon Index",
+       colour = "Site Exposure") +
+  theme_classic()
 
+DiversityHight_Plot
 ```
 
 
@@ -103,9 +136,7 @@ ShannonIndex <- ShannonIndex %>%
 
 
 
-
-
-
+Code we're probs not gonna use:
 ```{r}
 # Cleaning the percent cover CSV file
 percent_cover <- percent_cover %>%
