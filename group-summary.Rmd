@@ -5,7 +5,8 @@ date: "01/11/2021"
 output: pdf_document
 ---
 
-```{r, echo=FALSE, message=FALSE}
+```{r, include=FALSE}
+# Packages required for the rest of this code.
 library(here)
 library(popbio)
 library(vegan)
@@ -22,7 +23,7 @@ Data was collected from Scott's Bay on Tuesday, October 26, 2021 using horizonta
 ## Data Analysis
 
 ### Importing the data
-```{r}
+```{r, include=FALSE}
 biodiversity <- read_csv(here("./Data/biodiversity.csv"))
 
 percent_cover <- read_csv(here("./Data/percent-cover.csv")) 
@@ -34,7 +35,9 @@ quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
 
 Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
 
-```{r, echo = FALSE}
+
+**DO WE NEED TO MULTIPLY `n` BY 10 BECAUSE OF THE SMALLER SAMPLING!?** 
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 # Create a data.frame with the tidal height values for each quadrant
 tidal_height <- quadrat_data %>%
   group_by(vertical_transect, quadrat) %>%
@@ -81,27 +84,37 @@ ShannonIndex <- ShannonIndex %>%
   cbind("exposure" = quadrat_data$side) %>%
   #Fixing the column names.
   rename("ShannonIndex" = diversity.vegan_biodiv..index....shannon..)
+```
 
+```{r fig.align = 'left', echo=FALSE}
+# Print the Shannon Index table created above.
+ knitr::kable(ShannonIndex, 
+              caption = "Shannon Index values by intertidal height and exposure.", 
+              align = "l")
 ```
 
 ### Analyzing the data
 
-```{r}
+```{r, include=FALSE}
+# Generate a linear model comparing diversity (ShannonIndex) to quadrat height 
+# above lowest normal tide.
 biodiv_lm <- lm(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
 summary(biodiv_lm)
 ```
-p=0.7145, R-squared = -0.04752
+p = 0.7145, R-squared = -0.04752
 
-```{r}
-ANOVA
+```{r, include=FALSE}
+# ANOVA function comparing shannon index to quadrat height. Assuming the data
+# is normal.
 biodiv_aov <- aov(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
 summary(biodiv_aov)
 ```
 p = 0.714
 
-### Visualising the data
-```{r}
-# Create a plot
+## Visualising the data
+Here is a plot to visualize Shannon Diversity against quadrat height.
+```{r, echo = FALSE, messages = FALSE}
+# Create a plot of Shannon Index against quadrat height
 DiversityHeight_Plot <- ggplot(data = ShannonIndex,
          aes(x = quadrat_height_cm,
              y = ShannonIndex)) +
@@ -114,43 +127,77 @@ DiversityHeight_Plot <- ggplot(data = ShannonIndex,
        colour = "Site Exposure") +
   theme_classic()
 
-DiversityHight_Plot
+# Print the plot created above.
+DiversityHeight_Plot
+
+# Save the plot to the `Images` folder in our git repository.
+ggsave("DiversityHeight_Plot.png", 
+       plot = DiversityHeight_Plot,
+       device = png,
+       path = "./Images")
+```
+
+Here is a boxplot to visualize how diversity between exposed and not exposed sites:
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# Create a boxplot comparing species diersity based on site exposure.
+Diversity_Boxplot <- ggplot(data = ShannonIndex,
+         aes(x = exposure,
+             y = ShannonIndex)) +
+  geom_boxplot(aes(fill = exposure)) +
+  labs(x = "Site Exposure",
+       y = "Species Diversity",
+       fill = "Site Exposure") +
+  # Remove the legend
+  guides(fill = "none") +
+  theme_classic()
+
+# Print the plot
+Diversity_Boxplot
+
+# Save the plot to the Images folder
+ggsave("Diversity_Boxplot.png", 
+       plot = Diversity_Boxplot,
+       device = png,
+       path = "./Images")
 ```
 
 
-Code we're probs not gonna use:
->>>>>>> 569c66a5936ae0ad2573724a0b796f229229f3f7
-```{r}
-# Cleaning the percent cover CSV file
-percent_cover <- percent_cover %>%
-  mutate(per_sand = per_sand/100,
-         per_pebble = per_pebble/100,
-         per_cobble = per_cobble/100,
-         per_boulder = per_boulder/100,
-         per_bedrock = per_bedrock/100,
-         per_mussel = per_mussel/100,
-         per_barnacle = per_barnacle/100,
-         per_upright = per_upright/100,
-         per_crust = per_crust/100)
+Here is a plot to visualize how species richness (as opposed to $H'$) differs with quadrat richness.
 
-# Adding a column o calculate species richness
-tidal_height <- quadrat_data %>%
-  group_by(vertical_transect, quadrat) %>%
-  summarize("quadrat_height_cm" = quadrat_height)
-
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+# Determining quadrat richness
 quad_richness <- biodiversity %>%
+  # Biodiversity has NA values in the species abundance column (`n`) which 
+  # neded to be removed.
   drop_na(n) %>%
+  # There were 10 samples per quadrat which had to be amalgomated.
   group_by(vertical_transect, quadrat) %>%
   summarize(n_spp = length(unique(species))) %>%
-  # Match the quadrat to a tidalhight value
+  # Match the quadrat to a tidalhight value and exposure
   cbind("quadrat_height_cm" = tidal_height$quadrat_height_cm) %>%
   cbind("exposure" = quadrat_data$side)
 
-spp_evenness <- biodiversity %>%
-  drop_na(n) %>%
-  group_by(vertical_transect, quadrat) %>%
-  summarize(n_indv = length(unique(species))) %>%
-  cbind("quadrat_height_cm" = tidal_height$quadrat_height_cm) %>%
-  cbind("exposure" = quadrat_data$side)
+# Plot quadrat richness against intertidal height
+QuadRichness_Plot <- ggplot(data = quad_richness,
+         aes(x = quadrat_height_cm,
+             y = n_spp)) +
+  geom_point(aes(colour = exposure)) +
+  geom_smooth(colour = "black",
+              size = 0.7,
+              method = lm, se = FALSE) +
+  labs(x = "Quadrat Height (cm)",
+       y = "Species Richness (n)",
+       colour = "Site Exposure") +
+  theme_classic()
+
+# Print quadrat richness plot.
+QuadRichness_Plot
+
+# Save the plot to the `Images` folder.
+ggsave("QuadRichness_Plot.png", 
+       plot = QuadRichness_Plot,
+       device = png,
+       path = "./Images")
 ```
 
