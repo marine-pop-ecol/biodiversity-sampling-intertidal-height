@@ -5,7 +5,7 @@ date: "01/11/2021"
 output: pdf_document
 ---
 
-```{r, echo=FALSE, message=FALSE}
+```{r, include=FALSE}
 library(here)
 library(popbio)
 library(vegan)
@@ -22,7 +22,7 @@ Data was collected from Scott's Bay on Tuesday, October 26, 2021 using horizonta
 ## Data Analysis
 
 ### Importing the data
-```{r}
+```{r, include=FALSE}
 biodiversity <- read_csv(here("./Data/biodiversity.csv"))
 
 percent_cover <- read_csv(here("./Data/percent-cover.csv")) 
@@ -34,7 +34,7 @@ quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
 
 Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 # Create a data.frame with the tidal height values for each quadrant
 tidal_height <- quadrat_data %>%
   group_by(vertical_transect, quadrat) %>%
@@ -81,25 +81,30 @@ ShannonIndex <- ShannonIndex %>%
   cbind("exposure" = quadrat_data$side) %>%
   #Fixing the column names.
   rename("ShannonIndex" = diversity.vegan_biodiv..index....shannon..)
+```
 
+```{r fig.align = 'left', echo=FALSE}
+ knitr::kable(ShannonIndex, 
+              caption = "Shannon Index values by intertidal height and exposure.", 
+              align = "l")
 ```
 
 ### Analyzing the data
 
-```{r}
+```{r, include=FALSE}
 biodiv_lm <- lm(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
 summary(biodiv_lm)
 ```
 p=0.7145, R-squared = -0.04752
 
-```{r}
+```{r, include=FALSE}
 # ANOVA
 biodiv_aov <- aov(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
 summary(biodiv_aov)
 ```
 p = 0.714
 
-### Visualising the data
+## Visualising the data
 Here is a plot to visualize Shannon Diversity against quadrat height.
 ```{r, echo = FALSE, messages = FALSE}
 # Create a plot
@@ -116,12 +121,17 @@ DiversityHeight_Plot <- ggplot(data = ShannonIndex,
   theme_classic()
 
 DiversityHeight_Plot
+
+ggsave("DiversityHeight_Plot.png", 
+       plot = DiversityHeight_Plot,
+       device = png,
+       path = "./Images")
 ```
 
 Here is a boxplot to visualize how diversity between exposed and not exposed sites:
 
-```{r}
-QuadRichness_Plot <- ggplot(data = ShannonIndex,
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+Diversity_Boxplot <- ggplot(data = ShannonIndex,
          aes(x = exposure,
              y = ShannonIndex)) +
   geom_boxplot(aes(fill = exposure)) +
@@ -131,13 +141,18 @@ QuadRichness_Plot <- ggplot(data = ShannonIndex,
   guides(fill = "none") +
   theme_classic()
 
-QuadRichness_Plot
+Diversity_Boxplot
+
+ggsave("Diversity_Boxplot.png", 
+       plot = Diversity_Boxplot,
+       device = png,
+       path = "./Images")
 ```
 
 
 Here is a plot to visualize how species richness (as opposed to $H'$) differs with quadrat richness.
 
-```{r, echo = FALSE, messages = FALSE}
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
 quad_richness <- biodiversity %>%
   drop_na(n) %>%
   group_by(vertical_transect, quadrat) %>%
@@ -159,5 +174,10 @@ QuadRichness_Plot <- ggplot(data = quad_richness,
   theme_classic()
 
 QuadRichness_Plot
+
+ggsave("QuadRichness_Plot.png", 
+       plot = QuadRichness_Plot,
+       device = png,
+       path = "./Images")
 ```
 
