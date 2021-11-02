@@ -22,6 +22,7 @@ library(tidyverse)
 
 Data was collected from Scott's Bay on Tuesday, October 26, 2021 using horizontal transects at two sites.  In our analysis, we used tidal heights (cm) and the number of individuals of each species in each quadrat. In order to investigate our hypothesis, Shannon diversity (H) indices were calculated at each tidal height and an anova was done in order to determine if there was a significant mean difference between biodiversity and tidal heights. Biodiversity (H) was then plotted against tidal height, and a linear regression was done in order to visualize the relationship between the two. 
 
+
 ## Data Analysis
 
 ```{r, include=FALSE}
@@ -201,3 +202,6 @@ ggsave("QuadRichness_Plot.png",
        path = "./Images")
 ```
 Figure 3. A plot to visualize species richness (n) and shore elevation (cm).
+
+## Results
+There is not a significant relationship between shore elevation and species richness (Figure 3), or between shore elevation and Shannon Index values (Figure 2), as both an anova test and a linear regression returned a p-value of over 0.7 (above 0.05). There was also not a significant difference between biodiversity at sheltered and exposed sites as illustrated in Figure 1. 
