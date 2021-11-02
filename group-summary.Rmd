@@ -34,9 +34,9 @@ percent_cover <- read_csv(here("./Data/percent-cover.csv"))
 
 quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
 ```
+
 Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
 
-**DO WE NEED TO MULTIPLY `n` BY 10 BECAUSE OF THE SMALLER SAMPLING!?** 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 #Modifying the Data
 
@@ -96,6 +96,7 @@ ShannonIndex <- ShannonIndex %>%
 ```
 
 ### Analyzing the data
+
 Linear Model Data
 ```{r, include=FALSE}
 # Generate a linear model comparing diversity (ShannonIndex) to quadrat height 
