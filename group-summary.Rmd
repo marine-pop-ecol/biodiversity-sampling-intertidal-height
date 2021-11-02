@@ -1,8 +1,10 @@
 ---
-title: "group-summary"
+title: 'Group Summary: Intertidal Height Affecting Species Diversity'
 author: "Meredith Miller, Carter Burtlake, Naomi Lubkin, Declan Taylor"
 date: "01/11/2021"
-output: pdf_document
+output:
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r, include=FALSE}
@@ -22,22 +24,22 @@ Data was collected from Scott's Bay on Tuesday, October 26, 2021 using horizonta
 
 ## Data Analysis
 
-### Importing the data
 ```{r, include=FALSE}
+
+#Importing Data
+
 biodiversity <- read_csv(here("./Data/biodiversity.csv"))
 
 percent_cover <- read_csv(here("./Data/percent-cover.csv")) 
 
 quadrat_data <- read_csv(here("./Data/quadrat-data.csv"))
 ```
-
-### Modifying the data
-
 Please note that tidal heights were calculated using the Canadian Hydrographic Service's 2021 Tide and Current Tables (Vol. 5)
-
 
 **DO WE NEED TO MULTIPLY `n` BY 10 BECAUSE OF THE SMALLER SAMPLING!?** 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
+#Modifying the Data
+
 # Create a data.frame with the tidal height values for each quadrant
 tidal_height <- quadrat_data %>%
   group_by(vertical_transect, quadrat) %>%
@@ -94,7 +96,7 @@ ShannonIndex <- ShannonIndex %>%
 ```
 
 ### Analyzing the data
-
+Linear Model Data
 ```{r, include=FALSE}
 # Generate a linear model comparing diversity (ShannonIndex) to quadrat height 
 # above lowest normal tide.
@@ -103,17 +105,18 @@ summary(biodiv_lm)
 ```
 p = 0.7145, R-squared = -0.04752
 
+ANOVA Data
 ```{r, include=FALSE}
 # ANOVA function comparing shannon index to quadrat height. Assuming the data
 # is normal.
 biodiv_aov <- aov(ShannonIndex ~ quadrat_height_cm, data = ShannonIndex)
 summary(biodiv_aov)
 ```
-p = 0.714
+p = 0.715
 
 ## Visualising the data
-Here is a plot to visualize Shannon Diversity against quadrat height.
-```{r, echo = FALSE, messages = FALSE}
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 # Create a plot of Shannon Index against quadrat height
 DiversityHeight_Plot <- ggplot(data = ShannonIndex,
          aes(x = quadrat_height_cm,
@@ -122,7 +125,7 @@ DiversityHeight_Plot <- ggplot(data = ShannonIndex,
   geom_smooth(colour = "black",
               size = 0.7,
               method = lm, se = FALSE) +
-  labs(x = "Quadrat Height (cm)",
+  labs(x = "Shore Elevation (cm)",
        y = "Shannon Index",
        colour = "Site Exposure") +
   theme_classic()
@@ -136,10 +139,9 @@ ggsave("DiversityHeight_Plot.png",
        device = png,
        path = "./Images")
 ```
+Figure 1. A plot to visualize Shannon Diversity against shore elveation (cm). 
 
-Here is a boxplot to visualize how diversity between exposed and not exposed sites:
-
-```{r, echo = FALSE, message=FALSE, warning=FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 # Create a boxplot comparing species diersity based on site exposure.
 Diversity_Boxplot <- ggplot(data = ShannonIndex,
          aes(x = exposure,
@@ -161,9 +163,7 @@ ggsave("Diversity_Boxplot.png",
        device = png,
        path = "./Images")
 ```
-
-
-Here is a plot to visualize how species richness (as opposed to $H'$) differs with quadrat richness.
+Figure 2. A boxplot to visualize diversity between exposed and sheltered sites.
 
 ```{r, echo = FALSE, message = FALSE, warning=FALSE}
 # Determining quadrat richness
@@ -186,7 +186,7 @@ QuadRichness_Plot <- ggplot(data = quad_richness,
   geom_smooth(colour = "black",
               size = 0.7,
               method = lm, se = FALSE) +
-  labs(x = "Quadrat Height (cm)",
+  labs(x = "Shore Elevation (cm)",
        y = "Species Richness (n)",
        colour = "Site Exposure") +
   theme_classic()
@@ -200,4 +200,4 @@ ggsave("QuadRichness_Plot.png",
        device = png,
        path = "./Images")
 ```
-
+Figure 3. A plot to visualize species richness against quadrat richness.
