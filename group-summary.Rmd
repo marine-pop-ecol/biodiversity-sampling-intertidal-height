@@ -200,4 +200,4 @@ ggsave("QuadRichness_Plot.png",
        device = png,
        path = "./Images")
 ```
-Figure 3. A plot to visualize species richness against quadrat richness.
+Figure 3. A plot to visualize species richness (n) and shore elevation (cm).
